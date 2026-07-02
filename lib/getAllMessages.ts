@@ -6,13 +6,13 @@ import { sqldb } from "@/lib/dbConnection";
 interface UserTokenPayload extends JwtPayload {
   id: string;
 }
-interface Message {
+type ChatMessage = {
   id: string;
+  role: "user" | "bot";
   content: string;
-  role: "user" | "assistant";
-  token_count: number;
-  model_version: string;
-}
+  progress?: string[];
+  isStreaming?: boolean;
+};
 
 export async function getAllMessagesByConversationId(conversationId: string) {
   const cookieStore = await cookies();
@@ -32,11 +32,11 @@ export async function getAllMessagesByConversationId(conversationId: string) {
     const [rows]: any = await sqldb.execute(
       `SELECT id, content, role, token_count, model_version 
        FROM messages 
-       WHERE conversation_id = ? AND user_id = ?`,
-      [conversationId, userId],
+       WHERE conversation_id = ? order by created_at`,
+      [conversationId],
     );
 
-    return { messageType: "S", data: rows as Message[] };
+    return { messageType: "S", data: rows as ChatMessage[] };
   } catch (error) {
     console.error("Failed to fetch messages:", error);
     return { messageType: "E", message: "Failed to fetch messages" };

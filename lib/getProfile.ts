@@ -1,3 +1,4 @@
+"use server";
 import { cookies } from "next/headers";
 import JWT, { JwtPayload } from "jsonwebtoken";
 import { sqldb } from "@/lib/dbConnection";

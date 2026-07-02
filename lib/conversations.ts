@@ -22,8 +22,8 @@ export async function createNewConversation() {
     const userId = decoded.id;
     const uniqueId = uuidv4(); // Generate a unique ID for the conversation
     const [rows]: any = await sqldb.execute(
-      `INSERT INTO conversations (id, user_id) VALUES (?, ?)`,
-      [uniqueId, userId],
+      `INSERT INTO conversations (id, user_id, title) VALUES (?, ?, ?)`,
+      [uniqueId, userId, "New Conversation"],
     );
 
     const conversationId = rows.uniqueId || uniqueId; // Use the generated unique ID if the database doesn't return one
@@ -59,7 +59,7 @@ export async function getAllUserConversations() {
     const userId = decoded.id;
 
     const [rows]: any = await sqldb.execute(
-      `SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at DESC`,
+      `SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at`,
       [userId],
     );
     console.log("Fetched Conversations:", rows);
@@ -79,14 +79,19 @@ export async function updateMessageInConversation(
   model_version: string,
 ) {
   try {
-    const [rows]: any = await sqldb.execute(
-      `UPDATE messages SET content = ?, role = ?, token_count = ?, model_version = ? WHERE id = ? AND conversation_id = ?`,
-      [newContent, role, tokenCount, model_version, messageId, conversationId],
+    const [result] = await sqldb.execute(
+      `INSERT INTO messages (id, conversation_id, content, role, token_count, model_version) 
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE 
+       content = VALUES(content), 
+       token_count = VALUES(token_count), 
+       model_version = VALUES(model_version)`,
+      [messageId, conversationId, newContent, role, tokenCount, model_version],
     );
-    if (rows.affectedRows === 0) {
-      throw new Error("No message found to update");
+    if (result.affectedRows === 0) {
+      throw new Error("Failed to save the message");
     } else {
-      return { messageType: "S", message: "Message updated successfully" };
+      return { messageType: "S", message: "Message saved successfully" };
     }
   } catch (error) {
     console.error("Failed to update message in conversation:", error);
