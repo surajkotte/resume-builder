@@ -120,7 +120,7 @@ export default function ChatPage() {
         body: JSON.stringify({
           message: userText,
           thread_id: currentThreadId,
-          username: profile?.username,
+          username: 'surajkotte',
           resume_url: profile?.resume_url,
         }),
       });
