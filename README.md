@@ -26,12 +26,17 @@ project history — exposed as a chat experience via a Next.js frontend.
                                 │   │ [ prep_router ]  [ general_agent ]       │ │
                                 │   │  /          \    react-agent w/ tools:   │ │
                                 │   │ resume_    github_    - resume_extraction│ │
-                                │   │ extraction readme     - github_readme    │ │
-                                │   │      \      /         - get_atc_score    │ │
-                                │   │       ▼    ▼          - analyze_skill_gaps│ │
-                                │   │  [ resume_creation ]      │              │ │
-                                │   │        │                  ▼              │ │
-                                │   │        ▼                 END             │ │
+                                │   │ extraction readme     - github_readme    │ │      
+                                │   │      \      /         - get_atc_score    │ │              Observabilit/eval
+                                │   │       ▼    ▼          - analyze_skill_gaps│ │  ---->         LangSmith
+                                |   |          |                    |          | |    
+                                |   |          ▼                    ▼          | |
+                                |   |     [pii_detetor]            END         | |
+                                |   |           |                              | |
+                                |   |           ▼                              | |
+                                │   │  [ resume_creation ]                     │ │
+                                │   │        │                                 │ │
+                                │   │        ▼                                 │ │
                                 │   │  [ atc_checker ]                         │ │
                                 │   │    │  retry loop (score<85, retries<=3)  │ │
                                 │   │    ▼                                     │ │
@@ -62,7 +67,8 @@ project history — exposed as a chat experience via a Next.js frontend.
 **Flow 1 — Resume creation** (`intent = create_resume`)
 User asks for a resume to be written or tailored to a JD.
 `prep_router` conditionally branches into `resume_extraction` and/or `github_readme`
-depending on what's missing from state, both converge into `resume_creation`, which
+depending on what's missing from state, both converge into Pii_detector which redacts personal informations
+followed by`resume_creation`, which
 feeds `atc_checker`. If the score is below threshold and retries remain, it loops
 back into `resume_creation` with the prior analysis as feedback; otherwise it
 proceeds to `skill_gap_analyzer` and ends.

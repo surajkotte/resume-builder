@@ -120,7 +120,7 @@ export default function ChatPage() {
         body: JSON.stringify({
           message: userText,
           thread_id: currentThreadId,
-          username: 'surajkotte',
+          username: "surajkotte",
           resume_url: profile?.resume_url,
         }),
       });
@@ -157,10 +157,19 @@ export default function ChatPage() {
               ),
             );
           } else if (evt.type === "done") {
-            const finalText = evt.new_resume_markdown
+            let finalText: string = evt.new_resume_markdown
               ? `**ATC score: ${evt.atc_score}/100**\n\n${evt.new_resume_markdown}`
               : evt.chat_response || "I couldn't produce a response for that.";
-
+            console.log(finalText);
+            finalText =
+              finalText[0]["text"]?.replace("<PHONE_NUMBER>", profile?.phone) ||
+              finalText?.replace("<PHONE_NUMBER>", profile?.phone);
+            finalText =
+              finalText[0]?.text?.replace(
+                "EMAIL_ADDRESS",
+                "vsssurajkotte@gmail.com",
+              ) ||
+              finalText.replace("EMAIL_ADDRESS", "vsssurajkotte@gmail.com");
             updateThreadMessage(
               botMessageId,
               finalText,
@@ -182,7 +191,7 @@ export default function ChatPage() {
             });
             updateThreadMessage(
               botMessageId,
-              evt?.message || "Unknown error",
+              evt?.message[0].text || evt?.message || "Unknown error",
               "bot",
               Number(evt?.token_count || 0),
               "gemini-2.5-flash",
