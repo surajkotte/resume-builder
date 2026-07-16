@@ -17,6 +17,7 @@ export function ChatSidebar({
   onNewChat,
   onRemoveHistory,
   onSelectHistory,
+  selId,
 }: ChatSidebarProps) {
   return (
     <aside className="w-80 border-l border-gray-800 bg-gray-900/40 flex flex-col shrink-0">
@@ -39,7 +40,7 @@ export function ChatSidebar({
           history.map((item) => (
             <div
               key={item.id}
-              className="group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-300 transition hover:bg-gray-800/60 cursor-pointer"
+              className={`group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-gray-300 transition hover:bg-gray-800/60 cursor-pointer ${selId == item?.id ? "bg-blue-800/60" : ""}`}
               onClick={() => onSelectHistory(item.id)}
             >
               <div className="flex items-center gap-2.5 truncate">

@@ -6,6 +6,7 @@ import {
   createNewConversation,
   updateConversationTitle,
   updateMessageInConversation,
+  deleteConversation,
 } from "../lib/conversations";
 import { getLoggedinProfile } from "../lib/getProfile";
 import { getAllMessagesByConversationId } from "../lib/getAllMessages";
@@ -153,6 +154,12 @@ export const useChatHook = () => {
     }
   };
 
+  const deleteConversations = async (id) => {
+    try {
+      const response = await deleteConversation(id);
+      return response;
+    } catch (error) {}
+  };
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -168,6 +175,7 @@ export const useChatHook = () => {
     history,
     setHistory,
     updateMessage,
+    deleteConversations,
     profile,
     setNewConversationTitle,
   };

@@ -26,6 +26,7 @@ type ChatMessage = {
 export default function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedId, setSelectedId] = useState("");
   const threadIdRef = useRef<string | null>(null);
   const {
     startNewChat,
@@ -37,6 +38,7 @@ export default function ChatPage() {
     setNewConversationTitle,
     updateMessage,
     fetchMessages,
+    deleteConversations,
     profile,
   } = useChatHook();
 
@@ -157,19 +159,25 @@ export default function ChatPage() {
               ),
             );
           } else if (evt.type === "done") {
-            let finalText: string = evt.new_resume_markdown
-              ? `**ATC score: ${evt.atc_score}/100**\n\n${evt.new_resume_markdown}`
-              : evt.chat_response || "I couldn't produce a response for that.";
+            let finalText: string | { text?: string }[] =
+              evt.new_resume_markdown
+                ? `**ATC score: ${evt.atc_score}/100**\n\n${evt.new_resume_markdown}`
+                : evt.chat_response ||
+                  "I couldn't produce a response for that.";
             console.log(finalText);
-            finalText =
-              finalText[0]["text"]?.replace("<PHONE_NUMBER>", profile?.phone) ||
-              finalText?.replace("<PHONE_NUMBER>", profile?.phone);
-            finalText =
-              finalText[0]?.text?.replace(
-                "EMAIL_ADDRESS",
-                "vsssurajkotte@gmail.com",
-              ) ||
-              finalText.replace("EMAIL_ADDRESS", "vsssurajkotte@gmail.com");
+
+            const normalizeText = (
+              value: string | { text?: string }[],
+            ): string => {
+              if (Array.isArray(value)) {
+                return value[0]?.text ?? "";
+              }
+              return value;
+            };
+
+            finalText = normalizeText(finalText)
+              .replace("<PHONE_NUMBER>", profile?.phone ?? "")
+              .replace("EMAIL_ADDRESS", "vsssurajkotte@gmail.com");
             updateThreadMessage(
               botMessageId,
               finalText,
@@ -223,10 +231,15 @@ export default function ChatPage() {
       <ChatSidebar
         history={history}
         onNewChat={startNewChat}
-        onRemoveHistory={(id) =>
-          setHistory((prev) => prev.filter((h) => h.id !== id))
-        }
-        onSelectHistory={(id) => fetchMessages(id)}
+        onRemoveHistory={(id) => {
+          deleteConversations(id);
+          setHistory((prev) => prev.filter((h) => h.id !== id));
+        }}
+        onSelectHistory={(id) => {
+          setSelectedId(id);
+          fetchMessages(id);
+        }}
+        selId={selectedId}
       />
 
       <div className="flex flex-1 flex-col justify-between bg-gray-950 relative">

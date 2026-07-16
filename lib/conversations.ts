@@ -62,11 +62,28 @@ export async function getAllUserConversations() {
       `SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at`,
       [userId],
     );
-    console.log("Fetched Conversations:", rows);
     return rows || null;
   } catch (error) {
     console.error("Failed to fetch user profile:", error);
     return null;
+  }
+}
+
+export async function deleteConversation(id: String) {
+  try {
+    if (id) {
+      const response = await sqldb.execute(
+        " DELETE from conversations where id = ?",
+        [id],
+      );
+      console.log(response)
+      return { messageType: "S", message: "deleted successfully" };
+    } else {
+      throw Error("Please provide conversation Id");
+    }
+  } catch (error) {
+    console.log("Failed to delete conversation", error);
+    return { messageType: "E", message: "Failed to update message" };
   }
 }
 
